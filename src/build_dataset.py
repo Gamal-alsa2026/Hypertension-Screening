@@ -117,6 +117,7 @@ def activity(period: str) -> pd.DataFrame:
     sitting_min_day = usual minutes sitting per day."""
     paq = read(period, "PAQ")
     sitting = clean_codes(paq["PAD680"], [7777, 9999])
+    sitting = sitting.where(sitting <= 1200)  # >20 h/day is implausible (D-009)
 
     if period == "2017-2020":
         def weekly(flag, days, minutes):

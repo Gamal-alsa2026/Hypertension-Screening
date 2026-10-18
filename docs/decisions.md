@@ -130,3 +130,14 @@ Adults who have never been told they have hypertension:
   - Physical activity is an established risk factor for hypertension and is not represented.
   - Future Yemeni data collection should include an activity measure suited to local life (work, walking, transport), not only leisure-time exercise.
 - **Note:** `ltpa_min_week` is still produced by `src/build_dataset.py` for transparency but is not used as a predictor.
+
+
+## D-009 — Implausible and extreme values
+- **Date:** 2026-10-18
+- **Status:** Accepted
+- **Context:** Counts of extreme values were checked (`notebooks/02_variables.ipynb`). All affected fewer than 15 participants per rule and period (e.g. BMI >60: 12 and 4; creatinine >3: 3 and 0; sitting >20 h/day: 1 and 1).
+- **Decision:**
+  1. Measured values (BMI, waist, laboratory results, blood pressure) are kept as recorded. Extreme values are biologically possible and were measured by trained staff or a quality-controlled laboratory.
+  2. Self-reported sitting time above 20 hours per day (1,200 minutes) is set to missing, as it is not compatible with sleep.
+  3. Influence of extreme values on the models will be handled during preprocessing (Phase 3), not by deleting data.
+- **Reasoning:** Removing extreme but real measurements would remove the participants at highest risk. Only clearly impossible self-reports are treated as errors.

@@ -32,7 +32,15 @@ Decisions can be revised, but never silently: add a new entry that supersedes th
   - How many readings, and which ones (mean of readings 2–3, all readings)?
   - Are participants with a prior diagnosis or on antihypertensive medication excluded from the screening population?
 
-## D-004 — Primary development dataset
-- **Date:** —
-- **Status:** Open
-- **Candidate:** NHANES 2017–2018 (see `docs/datasets.md`).
+## D-004 — Development and temporal validation data
+- **Date:** 2026-10-18
+- **Status:** Accepted
+- **Decision:** Develop on NHANES 2017–March 2020 pre-pandemic data. Use NHANES 2021–2023 as a held-out temporal validation set.
+- **Reasoning:** The pre-pandemic file roughly doubles the BP sample compared to 2017–2018 alone (11,656 vs 7,132 records). 2021–2023 uses the same oscillometric device, so it allows a fair test on data the model has never seen.
+- **Limitations:** Requires the combined pre-pandemic weights. Temporal validation is within the same country and survey, so it does not replace external validation in other populations (Phase 4).
+
+## D-005 — Blood pressure measurement method
+- **Date:** 2026-10-18
+- **Status:** Accepted
+- **Decision:** Use oscillometric blood pressure readings only.
+- **Reasoning:** It is the only method available across all selected periods, auscultatory measurement was discontinued after 2017–2018, and field screening (including in Yemen) is far more likely to use automated devices than mercury sphygmomanometers.

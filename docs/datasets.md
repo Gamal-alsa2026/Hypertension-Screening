@@ -62,11 +62,40 @@ Each data source is assessed with the same template so they can be compared fair
 
 ## G. NHANES — USA
 - **Source / link:** https://wwwn.cdc.gov/nchs/nhanes/
-- **Type:** Individual-level, nationally representative survey with complex sampling design (weights, strata, PSUs).
-- **Key variables:** demographics, examination (including measured BP), laboratory, questionnaires, medication. Components are joined on `SEQN`.
+- **Type:** Individual-level, nationally representative survey with complex sampling design (weights, strata, PSUs). Components are joined on `SEQN`.
 - **Access and license:** Public.
-- **Possible role:** Development (primary candidate).
-- **Status:** Cycle 2017–2018 under consideration. Detailed evaluation is the next step.
+- **Possible role:** Development (2017–March 2020) and temporal validation (2021–2023).
+- **Status:** Selected (see D-004, D-005).
+
+### Blood pressure measurement
+- **Oscillometric** (Omron HEM-907XL): 3 readings, 60 s apart, after 5 min seated rest. Available 2017–2018, 2017–March 2020 (`P_BPXO`) and 2021–2023 (`BPXO_L`).
+- **Auscultatory** (mercury, physician): 2017–2018 only (`BPX_J`). Discontinued after 2017–2018.
+- In 2017–2018 the same participants were measured with both methods in random order (methodology study).
+
+### Sample sizes (BP exam files, all ages ≥8, before restricting to adults)
+| Period | File | Records |
+|--------|------|---------|
+| 2017–2018 | BPXO_J | 7,132 (6,143 with a first systolic reading) |
+| 2017–March 2020 | P_BPXO | 11,656 |
+| 2021–2023 | BPXO_L | 7,801 |
+
+### Diagnosis and medication (BPQ)
+- `BPQ020`: ever told by a doctor you have hypertension.
+- `BPQ030`, `BPQ040A`, `BPQ050A`: asked **only** if `BPQ020` = Yes (skip pattern).
+-  **Leakage risk:** these variables reveal prior diagnosis. Use them only to define the study population, never as predictors.
+
+### Laboratory
+- Fasting glucose (`GLU_J`): morning fasting subsample only. 2017–2018: 2,711 valid with non-zero fasting weight `WTSAF2YR`. Using fasting labs roughly halves the sample.
+- Non-fasting labs (HbA1c, total cholesterol, HDL, creatinine): availability and sample size **to be verified**.
+
+### Weights
+- 2017–March 2020 must be analysed as one combined sample with its own pre-pandemic weights. 2019–2020 cannot be analysed alone.
+- 2021–2023 uses its own cycle weights.
+
+### Known limitations
+- US population only. Temporal validation is not a substitute for external validation in other populations.
+- Single-visit measurement (3 readings), not clinically confirmed chronic hypertension.
+- Hypertension prevalence 2017–2018 (adults ≥20, age-adjusted): 31.0% at 140/90 vs 46.6% at 130/80. Threshold choice strongly changes the outcome.
 
 ## H. WHO STEPS Microdata
 - **Source / link:** https://extranet.who.int/ncdsmicrodata/

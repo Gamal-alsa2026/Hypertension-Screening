@@ -32,7 +32,8 @@ SPECIAL_CODES = [7, 9, 77, 99, 777, 999, 7777, 9999, 77777, 99999]
 def read(period: str, component: str) -> pd.DataFrame:
     p = PERIODS[period]
     name = f"{p['prefix']}{component}{p['suffix']}"
-    df = pd.read_sas(RAW_DIR / period / f"{name}.xpt", format="xport")
+    # SAS transport stores exact zero as a tiny float (e.g. 5.4e-79). Round it.
+    df = pd.read_sas(RAW_DIR / period / f"{name}.xpt", format="xport").round(6)
     df.columns = [c.upper() for c in df.columns]
     return df
 
@@ -53,7 +54,7 @@ def population_and_outcome(period: str) -> pd.DataFrame:
     demo = read(period, "DEMO")[["SEQN", "RIDAGEYR", "RIAGENDR", "RIDEXPRG",
                                  w, "SDMVSTRA", "SDMVPSU"]]
     bpq = read(period, "BPQ")[["SEQN", "BPQ020"]]
-    bpxo = read(period, "BPXO")[["SEQN", "BPXOSY2", "BPXOSY3", "BPXODI2", "BPXODI3"]].round(6)
+    bpxo = read(period, "BPXO")[["SEQN", "BPXOSY2", "BPXOSY3", "BPXODI2", "BPXODI3"]]
 
     df = demo.merge(bpq, on="SEQN", how="left").merge(bpxo, on="SEQN", how="left")
     df = df[(df["RIDAGEYR"] >= 20) & (df["RIDEXPRG"] != 1) & (df["BPQ020"] == 2)].copy()

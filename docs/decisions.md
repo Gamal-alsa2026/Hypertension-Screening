@@ -89,7 +89,7 @@ Adults who have never been told they have hypertension:
 
 ## D-007 — Harmonising predictors across periods
 - **Date:** 2026-10-18
-- **Status:** Accepted
+- **Status:** Accepted, physical activity part superseded by D-008
 - **Context:** A variable check (`notebooks/02_variables.ipynb`) showed that two predictor groups from D-006 differ between periods:
   - Family history items (`MCQ300A`, `MCQ300C`) do not exist in 2021–2023 (`MCQ_L`).
   - The physical activity questionnaire changed. 2017–2020 (`P_PAQ`) covers work, transport and recreation. 2021–2023 (`PAQ_L`) covers leisure-time activity and sitting time only.
@@ -108,3 +108,25 @@ Adults who have never been told they have hypertension:
   - Family history of hypertension or diabetes is not used, although it is cheap to collect in practice. To be revisited with Yemeni data.
   - Work and transport activity is lost. In Yemen much physical activity comes from manual work and walking, so leisure-time activity may capture it poorly.
   - The two activity questionnaires are not worded identically; the harmonised variable is approximate.
+
+## D-008 — Remove leisure-time physical activity from the models
+- **Date:** 2026-10-18
+- **Status:** Accepted
+- **Context:** After harmonising (D-007), leisure-time activity still differs strongly between periods (`notebooks/02_variables.ipynb`):
+
+  | | 2017–2020 | 2021–2023 |
+  |---|---|---|
+  | Median min/week | 50 | 208 |
+  | Any leisure-time activity | 52.9% | 84.7% |
+  | ≥150 min/week | 39.2% | 57.0% |
+
+  Such a large shift in two years reflects the change in questionnaire wording (2017–2020: typical week, bouts of ≥10 continuous minutes; 2021–2023: frequency per day/week/month/year and minutes per session, no minimum bout), not a real change in behaviour.
+- **Decision:** Remove leisure-time physical activity from Models A and B. Keep daily sitting time, which is comparable between periods (median 300 min/day in both).
+- **Reasoning:** A predictor measured differently in development and validation data would make the temporal validation measure questionnaire differences rather than model performance.
+- **Updated predictor sets:**
+  - **Model A:** age, sex, BMI, waist circumference, smoking, sitting time, diagnosed diabetes.
+  - **Model B:** Model A + HbA1c, total cholesterol, HDL cholesterol, creatinine.
+- **Limitations:**
+  - Physical activity is an established risk factor for hypertension and is not represented.
+  - Future Yemeni data collection should include an activity measure suited to local life (work, walking, transport), not only leisure-time exercise.
+- **Note:** `ltpa_min_week` is still produced by `src/build_dataset.py` for transparency but is not used as a predictor.

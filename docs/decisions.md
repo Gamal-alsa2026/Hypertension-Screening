@@ -87,7 +87,7 @@ Adults who have never been told they have hypertension:
   - NHANES has no question on family history of hypertension.
   - NHANES does not capture khat use, a factor relevant to blood pressure in Yemen. This makes validation on Yemeni data essential before any use there.
 
-  ## D-007 — Harmonising predictors across periods
+## D-007 — Harmonising predictors across periods
 - **Date:** 2026-10-18
 - **Status:** Accepted
 - **Context:** A variable check (`notebooks/02_variables.ipynb`) showed that two predictor groups from D-006 differ between periods:

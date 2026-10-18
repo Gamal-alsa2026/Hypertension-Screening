@@ -24,13 +24,36 @@ Decisions can be revised, but never silently: add a new entry that supersedes th
 - **Decision:** Raw and processed data live in `data/raw` and `data/processed`, which are excluded by `.gitignore`. The repository contains code that downloads and processes data, not the data itself.
 - **Reasoning:** Keeps the repository small and reproducible, and ensures that any future restricted or patient-level data (for example from Yemen) can never be published by accident.
 
-## D-003 — Outcome definition
-- **Date:** —
-- **Status:** Open
-- **Questions to resolve:**
-  - Blood pressure threshold: ≥140/90 mmHg (WHO / ESC) or ≥130/80 mmHg (ACC/AHA 2017)?
-  - How many readings, and which ones (mean of readings 2–3, all readings)?
-  - Are participants with a prior diagnosis or on antihypertensive medication excluded from the screening population?
+## D-003 — Outcome definition and study population
+- **Date:** 2026-10-18
+- **Status:** Accepted
+
+### Study population
+Adults who have never been told they have hypertension:
+- Age ≥18 years.
+- `BPQ020` = No (never told by a doctor they have high blood pressure).
+- Excluded: `BPQ020` = Yes, Refused or Don't know; pregnant participants; participants without at least the 2nd oscillometric reading.
+
+### Blood pressure value
+- Mean of the 2nd and 3rd oscillometric readings.
+- If the 3rd reading is missing, use the 2nd reading alone.
+- If only the 1st reading is available, exclude the participant.
+
+### Outcome
+- **Positive (undiagnosed elevated BP):** systolic ≥140 mmHg or diastolic ≥90 mmHg.
+- **Negative:** below both thresholds.
+
+### Reasoning
+- **Population:** The research question is about people who do not know they have hypertension. Including diagnosed or treated participants would teach the model the characteristics of known patients (and their care) rather than of hidden cases.
+- **Threshold 140/90:** Used by WHO and European guidelines and by WHO STEPS surveys, so it matches the definition likely to be found in regional or Yemeni data. Whether Yemen's national guidelines use this threshold has not been verified.
+- **Readings 2 and 3:** The 1st reading is often raised by stress or insufficient rest. Averaging two readings reduces random error. This matches the WHO STEPS method.
+
+### Planned sensitivity analysis
+- Repeat the analysis with the 130/80 threshold (ACC/AHA 2017) to measure how much the results depend on the threshold.
+
+### Known limitations
+- A single-visit measurement indicates elevated blood pressure at the survey, not clinically confirmed chronic hypertension.
+- Participants taking BP-lowering drugs for other conditions (e.g. heart disease) may be labelled negative incorrectly. To be checked later using the NHANES prescription medication file.
 
 ## D-004 — Development and temporal validation data
 - **Date:** 2026-10-18

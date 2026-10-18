@@ -92,10 +92,26 @@ Each data source is assessed with the same template so they can be compared fair
 - 2017–March 2020 must be analysed as one combined sample with its own pre-pandemic weights. 2019–2020 cannot be analysed alone.
 - 2021–2023 uses its own cycle weights.
 
+### Missing blood pressure (checked 2026-10-18, `notebooks/01_missing_bp.ipynb`)
+Among eligible participants (adults ≥20, not pregnant, `BPQ020` = No):
+
+| Period | Eligible | Not examined | Examined, no BP | Final cohort |
+|--------|----------|--------------|-----------------|--------------|
+| 2017–2020 | 5,578 | 427 | 554 | 4,597 |
+| 2021–2023 | 4,815 | 1,105 | 123 | 3,587 |
+
+- 2017–2020: all 554 "examined, no BP" are from 2019–March 2020 (none from 2017–2018). 548 of them have no BP reading at all and no arm recorded, so the measurement was not performed. The reason is not documented in the sources checked so far.
+- These 554 have similar age to the final cohort (45.5 vs 45.3) but more women (60% vs 50%).
+- Only 6 had a 1st reading, too few to judge whether their BP differed.
+- 2021–2023: most missing participants were not examined. They are younger than the final cohort (26.7% vs 33.5% aged ≥60), so the validation cohort is slightly older.
+- MEC exam weights adjust for not attending the exam, but not for a missing component within the exam.
+
 ### Known limitations
 - US population only. Temporal validation is not a substitute for external validation in other populations.
 - Single-visit measurement (3 readings), not clinically confirmed chronic hypertension.
 - Hypertension prevalence 2017–2018 (adults ≥20, age-adjusted): 31.0% at 140/90 vs 46.6% at 130/80. Threshold choice strongly changes the outcome.
+
+- 12% of examined eligible participants in 2017–2020 have no BP measurement (all from 2019–2020, reason unknown). Possible selection bias cannot be ruled out.
 
 ## H. WHO STEPS Microdata
 - **Source / link:** https://extranet.who.int/ncdsmicrodata/

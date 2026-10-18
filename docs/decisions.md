@@ -3,8 +3,8 @@
 Every important research or design decision is recorded here with its reasoning.
 Decisions can be revised, but never silently: add a new entry that supersedes the old one.
 
-| ID | Status | Meaning |
-|----|--------|---------|
+| Status | Meaning |
+|--------|---------|
 | Accepted | Decision is in force |
 | Open | Still under discussion |
 | Superseded | Replaced by a later decision |

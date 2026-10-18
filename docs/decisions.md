@@ -72,7 +72,7 @@ Adults who have never been told they have hypertension:
 
 ## D-006 — Predictor sets: Model A (no lab) and Model B (with lab)
 - **Date:** 2026-10-18
-- **Status:** Accepted
+- **Status:** Accepted, predictor list updated by D-007
 - **Decision:** Develop and compare two models on the same study population.
   - **Model A (no laboratory):** age, sex, BMI, waist circumference, smoking, physical activity, diagnosed diabetes, family history of diabetes, family history of heart attack or angina before age 50.
   - **Model B (Model A + laboratory):** adds HbA1c, total cholesterol, HDL cholesterol. Creatinine / eGFR to be added if availability is confirmed.
@@ -86,3 +86,25 @@ Adults who have never been told they have hypertension:
 - **Known gaps:**
   - NHANES has no question on family history of hypertension.
   - NHANES does not capture khat use, a factor relevant to blood pressure in Yemen. This makes validation on Yemeni data essential before any use there.
+
+  ## D-007 — Harmonising predictors across periods
+- **Date:** 2026-10-18
+- **Status:** Accepted
+- **Context:** A variable check (`notebooks/02_variables.ipynb`) showed that two predictor groups from D-006 differ between periods:
+  - Family history items (`MCQ300A`, `MCQ300C`) do not exist in 2021–2023 (`MCQ_L`).
+  - The physical activity questionnaire changed. 2017–2020 (`P_PAQ`) covers work, transport and recreation. 2021–2023 (`PAQ_L`) covers leisure-time activity and sitting time only.
+- **Decision:**
+  1. Remove family history of diabetes and of early heart attack/angina from Models A and B.
+  2. Replace physical activity with harmonised variables available in both periods: weekly minutes of leisure-time moderate and vigorous activity, and daily sitting time.
+  3. Keep the study population at age ≥20 (D-003).
+- **Reasoning:**
+  - Every predictor must exist in both periods, otherwise the temporal validation does not test the same model.
+  - Leisure-time activity and sitting time are the only activity measures common to both periods.
+  - Age ≥20 is kept although family history no longer applies: hypertension at 18–19 is uncommon, the cardiovascular history items used in sensitivity analyses are asked from age 20, and changing the population again would reduce consistency.
+- **Updated predictor sets:**
+  - **Model A:** age, sex, BMI, waist circumference, smoking, leisure-time physical activity, sitting time, diagnosed diabetes.
+  - **Model B:** Model A + HbA1c, total cholesterol, HDL cholesterol, creatinine.
+- **Limitations:**
+  - Family history of hypertension or diabetes is not used, although it is cheap to collect in practice. To be revisited with Yemeni data.
+  - Work and transport activity is lost. In Yemen much physical activity comes from manual work and walking, so leisure-time activity may capture it poorly.
+  - The two activity questionnaires are not worded identically; the harmonised variable is approximate.

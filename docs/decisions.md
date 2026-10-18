@@ -30,7 +30,7 @@ Decisions can be revised, but never silently: add a new entry that supersedes th
 
 ### Study population
 Adults who have never been told they have hypertension:
-- Age ≥18 years.
+- Age ≥20 years.
 - `BPQ020` = No (never told by a doctor they have high blood pressure).
 - Excluded: `BPQ020` = Yes, Refused or Don't know; pregnant participants; participants without at least the 2nd oscillometric reading.
 
@@ -47,6 +47,7 @@ Adults who have never been told they have hypertension:
 - **Population:** The research question is about people who do not know they have hypertension. Including diagnosed or treated participants would teach the model the characteristics of known patients (and their care) rather than of hidden cases.
 - **Threshold 140/90:** Used by WHO and European guidelines and by WHO STEPS surveys, so it matches the definition likely to be found in regional or Yemeni data. Whether Yemen's national guidelines use this threshold has not been verified.
 - **Readings 2 and 3:** The 1st reading is often raised by stress or insufficient rest. Averaging two readings reduces random error. This matches the WHO STEPS method.
+- **Age ≥20:** NHANES family-history and cardiovascular questions are asked only from age 20. Using ≥20 avoids structurally missing data. Hypertension at 18–19 is uncommon, so few positive cases are lost.
 
 ### Planned sensitivity analysis
 - Repeat the analysis with the 130/80 threshold (ACC/AHA 2017) to measure how much the results depend on the threshold.
@@ -54,6 +55,7 @@ Adults who have never been told they have hypertension:
 ### Known limitations
 - A single-visit measurement indicates elevated blood pressure at the survey, not clinically confirmed chronic hypertension.
 - Participants taking BP-lowering drugs for other conditions (e.g. heart disease) may be labelled negative incorrectly. To be checked later using the NHANES prescription medication file.
+- The model is not developed or validated for ages 18–19.
 
 ## D-004 — Development and temporal validation data
 - **Date:** 2026-10-18
@@ -67,3 +69,20 @@ Adults who have never been told they have hypertension:
 - **Status:** Accepted
 - **Decision:** Use oscillometric blood pressure readings only.
 - **Reasoning:** It is the only method available across all selected periods, auscultatory measurement was discontinued after 2017–2018, and field screening (including in Yemen) is far more likely to use automated devices than mercury sphygmomanometers.
+
+## D-006 — Predictor sets: Model A (no lab) and Model B (with lab)
+- **Date:** 2026-10-18
+- **Status:** Accepted
+- **Decision:** Develop and compare two models on the same study population.
+  - **Model A (no laboratory):** age, sex, BMI, waist circumference, smoking, physical activity, diagnosed diabetes, family history of diabetes, family history of heart attack or angina before age 50.
+  - **Model B (Model A + laboratory):** adds HbA1c, total cholesterol, HDL cholesterol. Creatinine / eGFR to be added if availability is confirmed.
+- **Reasoning:** Model A uses information that can be collected in any primary-care or field setting, including in Yemen. Comparing A and B directly answers whether laboratory data improves screening enough to justify its cost.
+- **Excluded:**
+  - Fasting-only labs (triglycerides, LDL): would roughly halve the sample.
+  - Race/ethnicity: US-specific categories, not transferable to the target population.
+  - Pulse from the BP examination: measured in the same session as the outcome.
+  - Diagnosis and medication items from `BPQ`: used only to define the population (leakage).
+  - History of heart failure, coronary heart disease, heart attack or stroke: these participants are usually under medical care and may take BP-lowering drugs. Excluded from the main models; may be examined in a sensitivity analysis.
+- **Known gaps:**
+  - NHANES has no question on family history of hypertension.
+  - NHANES does not capture khat use, a factor relevant to blood pressure in Yemen. This makes validation on Yemeni data essential before any use there.

@@ -2,3 +2,4 @@ pandas
 requests
 pyreadstat
 ipykernel
+scikit-learn

@@ -161,3 +161,37 @@ Adults who have never been told they have hypertension:
 - **Other observations for later phases:**
   - Lab values and former smoking rise with age, so their univariable associations may reflect age. Model A vs B comparison will show whether labs add information beyond age.
   - Hypertension rates are lower in 2021–2023 within every age group (e.g. 60+: 28.6% vs 18.8%). The model may overestimate risk in the validation period, so calibration must be evaluated, not only discrimination.
+
+## D-011 — Modelling and evaluation plan
+- **Date:** 2026-10-21
+- **Status:** Accepted
+
+### Missing values
+- **Primary:** impute missing predictor values from the other predictors. The imputation model is fitted on training data only, inside the modelling pipeline, so no information leaks from test folds or from the validation period.
+- **Sensitivity analysis:** repeat on participants with complete data only.
+- **Reasoning:** Lab values are missing for about 5–9% of participants. Dropping them could bias the sample, and imputation keeps Models A and B on exactly the same participants.
+
+### Models
+- Compare logistic regression, random forest and XGBoost, for both Model A and Model B predictor sets.
+- Logistic regression allows non-linear effects of age and waist (e.g. splines).
+- Hyperparameters of random forest and XGBoost are tuned inside the cross-validation (nested), never on the validation period.
+
+### Internal validation
+- Repeated stratified 5-fold cross-validation, 10 repeats, on 2017–2020.
+- All preprocessing (imputation, scaling) is fitted inside each training fold.
+- The final model is refitted on all 2017–2020 data and evaluated **once** on 2021–2023. No changes are made after seeing validation results.
+
+### Selection criteria
+- Primary: discrimination (ROC-AUC) and calibration (calibration slope, intercept and plot).
+- Also reported: PR-AUC, sensitivity, specificity, precision, F1.
+- **Simplicity rule:** if a more complex model improves ROC-AUC by less than 0.02 over logistic regression, logistic regression is chosen.
+- **Reasoning:** F1 depends on an arbitrary threshold, weighs missed cases and false referrals equally, and ignores calibration. Choosing among many models on a single score increases the risk of selecting by chance.
+
+### Decision threshold
+- Pre-specified target: **sensitivity of 80%** (8 of 10 hypertensive participants referred for BP measurement).
+- The threshold is derived from out-of-fold cross-validation predictions in 2017–2020 and applied unchanged to 2021–2023.
+- Reported with it: % of people referred, and number needed to screen to find one case.
+- **Reasoning:** In screening, missing a case is worse than an extra referral, and the follow-up (a BP measurement) is cheap and harmless. Fixing the target before seeing results prevents choosing a threshold that flatters the model.
+
+### Open
+- Whether and how to use survey weights in model training and evaluation is to be decided before modelling starts.

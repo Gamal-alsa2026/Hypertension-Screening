@@ -111,7 +111,7 @@ Adults who have never been told they have hypertension:
 
 ## D-008 — Remove leisure-time physical activity from the models
 - **Date:** 2026-10-18
-- **Status:** Accepted
+- **Status:** Accepted, predictor sets updated by D-010
 - **Context:** After harmonising (D-007), leisure-time activity still differs strongly between periods (`notebooks/02_variables.ipynb`):
 
   | | 2017–2020 | 2021–2023 |
@@ -141,3 +141,23 @@ Adults who have never been told they have hypertension:
   2. Self-reported sitting time above 20 hours per day (1,200 minutes) is set to missing, as it is not compatible with sleep.
   3. Influence of extreme values on the models will be handled during preprocessing (Phase 3), not by deleting data.
 - **Reasoning:** Removing extreme but real measurements would remove the participants at highest risk. Only clearly impossible self-reports are treated as errors.
+
+## D-010 — Remove BMI; no univariable predictor selection
+- **Date:** 2026-10-20
+- **Status:** Accepted
+- **Context:** Exploratory analysis (`notebooks/03_outcome.ipynb`, 2017–2020, unweighted):
+  - BMI and waist circumference are highly correlated (Spearman r = 0.91).
+  - Hypertension rate rises steadily across waist quartiles (8.7% → 16.9%) but not across BMI quartiles (11.2%, 14.0%, 12.4%, 15.2%).
+  - Sitting time and HDL show no clear univariable association.
+- **Decision:**
+  1. Remove BMI. Keep waist circumference.
+  2. Do not remove predictors because of weak univariable association. Sitting time and HDL stay.
+- **Reasoning:**
+  - BMI is removed because it is redundant with waist, not because it is weak. Waist shows the clearer association and can be measured with a tape only, which suits low-resource settings.
+  - Selecting predictors by univariable association is a known source of bias and unstable models. A weak predictor alone may contribute when combined with others; the multivariable model decides.
+- **Updated predictor sets:**
+  - **Model A:** age, sex, waist circumference, smoking, sitting time, diagnosed diabetes.
+  - **Model B:** Model A + HbA1c, total cholesterol, HDL cholesterol, creatinine.
+- **Other observations for later phases:**
+  - Lab values and former smoking rise with age, so their univariable associations may reflect age. Model A vs B comparison will show whether labs add information beyond age.
+  - Hypertension rates are lower in 2021–2023 within every age group (e.g. 60+: 28.6% vs 18.8%). The model may overestimate risk in the validation period, so calibration must be evaluated, not only discrimination.

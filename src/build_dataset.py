@@ -49,7 +49,9 @@ def decode_bytes(s: pd.Series) -> pd.Series:
 
 # ---------- population and outcome (D-003) ----------
 
-def population_and_outcome(period: str) -> pd.DataFrame:
+def population_and_outcome(period: str, include_diagnosed: bool = False) -> pd.DataFrame:
+    """Main cohort (D-003): never told hypertension (BPQ020 == 2).
+    include_diagnosed=True also keeps BPQ020 == 1 (explanatory analysis only, R-002)."""
     w = PERIODS[period]["exam_weight"]
     demo = read(period, "DEMO")[["SEQN", "RIDAGEYR", "RIAGENDR", "RIDEXPRG",
                                  w, "SDMVSTRA", "SDMVPSU"]]
@@ -57,7 +59,8 @@ def population_and_outcome(period: str) -> pd.DataFrame:
     bpxo = read(period, "BPXO")[["SEQN", "BPXOSY2", "BPXOSY3", "BPXODI2", "BPXODI3"]]
 
     df = demo.merge(bpq, on="SEQN", how="left").merge(bpxo, on="SEQN", how="left")
-    df = df[(df["RIDAGEYR"] >= 20) & (df["RIDEXPRG"] != 1) & (df["BPQ020"] == 2)].copy()
+    allowed = [1, 2] if include_diagnosed else [2]
+    df = df[(df["RIDAGEYR"] >= 20) & (df["RIDEXPRG"] != 1) & df["BPQ020"].isin(allowed)].copy()
 
     for c in ["BPXOSY2", "BPXOSY3", "BPXODI2", "BPXODI3"]:
         df[c] = df[c].where(df[c] > 0)
@@ -76,6 +79,9 @@ def population_and_outcome(period: str) -> pd.DataFrame:
         "dbp": df["dbp"],
         "outcome_140_90": df["outcome_140_90"],
         "outcome_130_80": df["outcome_130_80"],
+        "diagnosed": (df["BPQ020"] == 1).astype(int),
+        # known OR undiagnosed hypertension (explanatory analysis only, R-002)
+        "outcome_any_140_90": ((df["BPQ020"] == 1) | (df["outcome_140_90"] == 1)).astype(int),
         "exam_weight": df[w],
         "strata": df["SDMVSTRA"],
         "psu": df["SDMVPSU"],
@@ -160,8 +166,8 @@ def labs(period: str) -> pd.DataFrame:
                               "LBDHDD": "hdl", "LBXSCR": "creatinine"})
 
 
-def build(period: str) -> pd.DataFrame:
-    df = population_and_outcome(period)
+def build(period: str, include_diagnosed: bool = False) -> pd.DataFrame:
+    df = population_and_outcome(period, include_diagnosed)
     for part in [body, smoking, diabetes, activity, labs]:
         df = df.merge(part(period), on="SEQN", how="left")
     df.insert(1, "period", period)
@@ -175,6 +181,12 @@ def main() -> None:
         path = OUT_DIR / f"cohort_{period}.csv"
         df.to_csv(path, index=False)
         print(f"{period}: {len(df)} rows, {df.shape[1]} columns -> {path.relative_to(ROOT)}")
+
+    # All adults incl. diagnosed, development period only (explanatory analysis, R-002)
+    df = build("2017-2020", include_diagnosed=True)
+    path = OUT_DIR / "cohort_all_2017-2020.csv"
+    df.to_csv(path, index=False)
+    print(f"2017-2020 all adults: {len(df)} rows -> {path.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

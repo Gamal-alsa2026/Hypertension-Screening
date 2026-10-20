@@ -13,13 +13,16 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.experimental import enable_iterative_imputer  # noqa: F401
 from sklearn.impute import IterativeImputer, SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import average_precision_score, brier_score_loss, roc_auc_score
-from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.model_selection import (RandomizedSearchCV, RepeatedStratifiedKFold,
+                                     StratifiedKFold)
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, SplineTransformer, StandardScaler
+from xgboost import XGBClassifier
 
 ROOT = Path(__file__).resolve().parent.parent
 PROCESSED = ROOT / "data" / "processed"
@@ -46,16 +49,13 @@ def make_logistic(predictors: list[str]) -> Pipeline:
     """Impute -> splines for age/waist + scale the rest -> logistic regression."""
     numeric = [c for c in predictors if c != "smoking"]
 
-    encode = ColumnTransformer(
-        [
-            ("num", "passthrough", numeric),
-            ("smoking", Pipeline([
-                ("fill", SimpleImputer(strategy="most_frequent")),
-                ("onehot", OneHotEncoder(drop=["never"], sparse_output=False)),
-            ]), ["smoking"]),
-        ],
-        verbose_feature_names_out=False,
-    )
+    parts = [("num", "passthrough", numeric)]
+    if "smoking" in predictors:
+        parts.append(("smoking", Pipeline([
+            ("fill", SimpleImputer(strategy="most_frequent")),
+            ("onehot", OneHotEncoder(drop=["never"], sparse_output=False)),
+        ]), ["smoking"]))
+    encode = ColumnTransformer(parts, verbose_feature_names_out=False)
 
     impute = IterativeImputer(max_iter=10, random_state=RANDOM_STATE)
 
@@ -127,7 +127,8 @@ def at_threshold(y: np.ndarray, p: np.ndarray, t: float) -> dict:
 # ---------- cross-validation ----------
 
 def cross_validate(make_model, predictors: list[str], df: pd.DataFrame,
-                   n_splits: int = 5, n_repeats: int = 10) -> dict:
+                   n_splits: int = 5, n_repeats: int = 10,
+                   outcome: str = OUTCOME, verbose: bool = False) -> dict:
     """Repeated stratified CV (D-011).
 
     Returns:
@@ -136,7 +137,7 @@ def cross_validate(make_model, predictors: list[str], df: pd.DataFrame,
                   predictions, with sensitivity/specificity/referral at it
     """
     X = df[predictors]
-    y = df[OUTCOME].to_numpy()
+    y = df[outcome].to_numpy()
     cv = RepeatedStratifiedKFold(n_splits=n_splits, n_repeats=n_repeats,
                                  random_state=RANDOM_STATE)
 
@@ -147,6 +148,8 @@ def cross_validate(make_model, predictors: list[str], df: pd.DataFrame,
         p = model.predict_proba(X.iloc[test])[:, 1]
         oof[repeat, test] = p
         fold_rows.append({"repeat": repeat, **metrics(y[test], p)})
+        if verbose and (i + 1) % n_splits == 0:
+            print(f"  repeat {repeat + 1}/{n_repeats} done", flush=True)
 
     threshold_rows = []
     for r in range(n_repeats):
@@ -167,3 +170,58 @@ def summarise(result: dict) -> pd.DataFrame:
                          "low": d[col].quantile(0.025),
                          "high": d[col].quantile(0.975)}
     return pd.DataFrame(rows).T
+
+
+# ---------- tree models (D-011) ----------
+
+def _tree_preprocess(predictors: list[str]) -> list:
+    """Same encoding and imputation as the logistic pipeline, no splines/scaling
+    (trees do not need them)."""
+    numeric = [c for c in predictors if c != "smoking"]
+    parts = [("num", "passthrough", numeric)]
+    if "smoking" in predictors:
+        parts.append(("smoking", Pipeline([
+            ("fill", SimpleImputer(strategy="most_frequent")),
+            ("onehot", OneHotEncoder(drop=["never"], sparse_output=False)),
+        ]), ["smoking"]))
+    return [
+        ("encode", ColumnTransformer(parts, verbose_feature_names_out=False)),
+        ("impute", IterativeImputer(max_iter=10, random_state=RANDOM_STATE)),
+    ]
+
+
+def _tuned(pipe: Pipeline, grid: dict, n_iter: int = 8) -> RandomizedSearchCV:
+    """Hyperparameters tuned by an inner 3-fold CV on the training fold only
+    (nested CV, D-011). Selection by ROC-AUC."""
+    return RandomizedSearchCV(
+        pipe, grid, n_iter=n_iter, scoring="roc_auc",
+        cv=StratifiedKFold(3, shuffle=True, random_state=RANDOM_STATE),
+        random_state=RANDOM_STATE, n_jobs=-1,
+    )
+
+
+def make_random_forest(predictors: list[str]) -> RandomizedSearchCV:
+    pipe = Pipeline(_tree_preprocess(predictors) + [
+        ("model", RandomForestClassifier(n_estimators=300, random_state=RANDOM_STATE)),
+    ])
+    grid = {
+        "model__min_samples_leaf": [10, 20, 40, 80],
+        "model__max_features": ["sqrt", 0.5, 1.0],
+        "model__max_depth": [4, 6, 8, None],
+    }
+    return _tuned(pipe, grid)
+
+
+def make_xgboost(predictors: list[str]) -> RandomizedSearchCV:
+    pipe = Pipeline(_tree_preprocess(predictors) + [
+        ("model", XGBClassifier(n_estimators=300, eval_metric="logloss",
+                                random_state=RANDOM_STATE, n_jobs=1)),
+    ])
+    grid = {
+        "model__max_depth": [2, 3, 4],
+        "model__learning_rate": [0.01, 0.03, 0.1],
+        "model__min_child_weight": [5, 10, 20],
+        "model__subsample": [0.7, 1.0],
+        "model__colsample_bytree": [0.7, 1.0],
+    }
+    return _tuned(pipe, grid)

@@ -3,3 +3,4 @@ requests
 pyreadstat
 ipykernel
 scikit-learn
+xgboost

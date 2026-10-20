@@ -207,3 +207,13 @@ Adults who have never been told they have hypertension:
   - Unweighted training uses every participant equally and benefits from NHANES oversampling of older adults, among whom hypertension is more common. Large weight differences would make training less stable.
   - Weighted evaluation shows whether performance holds for the US population as a whole. This matters especially for 2021–2023, where the analysed sample is older than the eligible population (see `docs/datasets.md`).
 - **Limitations:** Unweighted performance describes the NHANES sample, not the US adult population.
+
+## D-013 — Final model for temporal validation
+- **Date:** 2026-10-21
+- **Status:** Accepted
+- **Decision:** Logistic regression with Model A predictors (age, sex, waist circumference, smoking, sitting time, diagnosed diabetes), fitted on all 2017–2020 data.
+- **Reasoning (applying the pre-specified rules in D-011):**
+  - Random forest and XGBoost did not improve ROC-AUC over logistic regression by ≥0.02, and had worse calibration (R-003).
+  - Model B (with labs) did not improve ROC-AUC over Model A by ≥0.02 (R-001, R-003).
+- **Threshold:** the 80% sensitivity threshold is derived from out-of-fold CV predictions of this model in 2017–2020 (about 0.106, see R-001), and applied unchanged to 2021–2023.
+- **Secondary:** Model B logistic and the age-only rule are also evaluated on 2021–2023 for comparison, but the decision above is not changed by those results.

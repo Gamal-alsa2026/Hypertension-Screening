@@ -193,5 +193,17 @@ Adults who have never been told they have hypertension:
 - Reported with it: % of people referred, and number needed to screen to find one case.
 - **Reasoning:** In screening, missing a case is worse than an extra referral, and the follow-up (a BP measurement) is cheap and harmless. Fixing the target before seeing results prevents choosing a threshold that flatters the model.
 
-### Open
-- Whether and how to use survey weights in model training and evaluation is to be decided before modelling starts.
+### Survey weights
+- See D-012.
+
+## D-012 — Use of survey weights
+- **Date:** 2026-10-21
+- **Status:** Accepted
+- **Decision:**
+  - Models are trained **without** survey weights.
+  - Performance is reported **unweighted** (primary) and **weighted** with MEC exam weights (secondary), in both periods.
+- **Reasoning:**
+  - The goal is a screening model to be validated later in other populations (ultimately Yemen), not estimates representative of the US population.
+  - Unweighted training uses every participant equally and benefits from NHANES oversampling of older adults, among whom hypertension is more common. Large weight differences would make training less stable.
+  - Weighted evaluation shows whether performance holds for the US population as a whole. This matters especially for 2021–2023, where the analysed sample is older than the eligible population (see `docs/datasets.md`).
+- **Limitations:** Unweighted performance describes the NHANES sample, not the US adult population.

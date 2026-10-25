@@ -150,3 +150,40 @@ Model A, bootstrap 95% intervals (1,000 resamples): ROC-AUC 0.684–0.733; calib
 ### Implications
 - Recalibration makes absolute risks trustworthy but does not improve screening efficiency; efficiency depends on discrimination.
 - When the model is moved to a new setting (e.g. Yemen), both recalibration **and** re-selection of the threshold on local data are needed.
+
+## R-006 — Sensitivity analysis: outcome threshold 130/80
+- **Date:** 2026-10-25
+- **Notebook:** `notebooks/10_threshold_130_80.ipynb`
+- **Planned in:** D-003. Same population, predictors, models, CV and threshold rules as the main analysis; only the outcome changes to BP ≥130/80 mmHg.
+- **Positive:** 33.4% (2017–2020), 31.7% (2021–2023).
+
+### Cross-validation 2017–2020
+| | ROC-AUC | Cal. slope | Obs/Exp | Sensitivity | Specificity | Referred | Screened per case |
+|---|---|---|---|---|---|---|---|
+| Age only | 0.676 | 0.99 | 1.00 | 0.802 | 0.440 | 64.1% | 2.39 |
+| Model A | 0.701 | 0.97 | 1.00 | 0.801 | 0.493 | 60.5% | 2.26 |
+| Model B | 0.708 | 0.96 | 1.00 | 0.801 | 0.511 | 59.3% | 2.22 |
+
+### Temporal validation 2021–2023 (fitted on 2017–2020, thresholds fixed)
+| | ROC-AUC | Cal. slope | Obs/Exp | Sensitivity | Specificity | Referred | Screened per case |
+|---|---|---|---|---|---|---|---|
+| Age only (logistic) | 0.612 | 0.62 | 0.88 | 0.800 | 0.349 | 69.8% | 2.75 |
+| Model A | 0.660 | 0.77 | 0.90 | 0.821 | 0.413 | 66.1% | 2.54 |
+| Model B | 0.671 | 0.78 | 0.89 | 0.809 | 0.438 | 64.0% | 2.50 |
+| Age rule (≥36) | 0.612 | – | – | 0.811 | 0.329 | 71.5% | 2.78 |
+
+### Comparison with the main analysis (140/90)
+| Gain of Model A over age (ROC-AUC) | Internal CV | Temporal validation |
+|---|---|---|
+| 140/90 (R-001, R-004) | 0.011 | 0.009 |
+| 130/80 | 0.025 | 0.048 |
+
+### Findings
+- Overall discrimination is lower at 130/80 (milder elevation is harder to distinguish).
+- **Model A adds clearly more beyond age at 130/80** than at 140/90, exceeding the 0.02 rule in both internal and temporal validation. Age alone transported poorly (ROC-AUC 0.676 → 0.612, calibration slope 0.62).
+- Laboratory data still adds little (Model B vs A: +0.007 internal, +0.011 temporal).
+- Calibration in 2021–2023 is better than at 140/90 (observed/expected 0.90 vs 0.70), as prevalence changed less between periods at this threshold.
+
+### Interpretation
+- Severe elevation appears strongly driven by age, while milder elevation depends more on modifiable factors (waist, smoking, diabetes).
+- The main conclusions hold (labs add little; model gains are modest), but the value of a questionnaire model over an age rule depends on the chosen threshold. It is greater when the aim is earlier detection of milder elevation.

@@ -67,6 +67,7 @@ Full results: [`docs/results.md`](docs/results.md)
 3. **Complex models do not help.** Random forest and XGBoost perform the same as logistic regression, with worse calibration.
 4. **Likely explanation:** people with clear risk factors (e.g. diabetes, obesity) are often already diagnosed in the US, so the remaining undiagnosed cases are harder to distinguish. Including diagnosed adults triples the gain over age (0.011 → 0.031).
 5. **The model did not transport perfectly, even within the US.** Three years later it overestimated risk by about 40%. Recalibration fixed the risk estimates but not screening efficiency.
+6. **The threshold matters.** With the 130/80 mmHg threshold, Model A adds clearly more beyond age (ROC-AUC +0.025 internally, +0.048 on 2021–2023), while age alone transports poorly. Risk factors such as waist, smoking and diabetes appear more informative for milder elevation.
 
 ## What this means for Yemen
 - A model developed in one population **cannot be used in another without local validation and recalibration.**
@@ -109,7 +110,7 @@ Then run the notebooks in order.
 ## Next steps
 - External validation in other populations.
 - Access to Yemeni data (e.g. population-based hypertension studies) for validation and recalibration.
-- Sensitivity analysis with the 130/80 mmHg threshold.
+- Pilot data collection in Yemen, including local factors such as khat use and salt intake.
 
 ## Author
 Gamal Abdulnaser Al-Sabaeei, Applied Data Science & AI student, The Hague University of Applied Sciences.

@@ -80,20 +80,22 @@ def make_logistic(predictors: list[str]) -> Pipeline:
 
 # ---------- metrics ----------
 
-def calibration_slope(y: np.ndarray, p: np.ndarray) -> float:
+def calibration_slope(y: np.ndarray, p: np.ndarray, w: np.ndarray | None = None) -> float:
     """Slope of a logistic regression of the outcome on logit(p). Ideal = 1."""
     p = np.clip(p, 1e-6, 1 - 1e-6)
     logit = np.log(p / (1 - p)).reshape(-1, 1)
-    return LogisticRegression(C=np.inf).fit(logit, y).coef_[0, 0]
+    return LogisticRegression(C=np.inf).fit(logit, y, sample_weight=w).coef_[0, 0]
 
 
-def metrics(y: np.ndarray, p: np.ndarray) -> dict:
+def metrics(y: np.ndarray, p: np.ndarray, w: np.ndarray | None = None) -> dict:
+    """w = optional survey weights (D-012). None = unweighted."""
     return {
-        "roc_auc": roc_auc_score(y, p),
-        "pr_auc": average_precision_score(y, p),
-        "brier": brier_score_loss(y, p),
-        "cal_slope": calibration_slope(y, p),
-        "obs_exp": y.mean() / p.mean(),   # observed / expected cases. Ideal = 1
+        "roc_auc": roc_auc_score(y, p, sample_weight=w),
+        "pr_auc": average_precision_score(y, p, sample_weight=w),
+        "brier": brier_score_loss(y, p, sample_weight=w),
+        "cal_slope": calibration_slope(y, p, w),
+        # observed / expected cases. Ideal = 1
+        "obs_exp": np.average(y, weights=w) / np.average(p, weights=w),
     }
 
 
@@ -105,12 +107,15 @@ def threshold_for_sensitivity(y: np.ndarray, p: np.ndarray,
     return positives[k - 1]
 
 
-def at_threshold(y: np.ndarray, p: np.ndarray, t: float) -> dict:
+def at_threshold(y: np.ndarray, p: np.ndarray, t: float,
+                 w: np.ndarray | None = None) -> dict:
+    """w = optional survey weights (D-012). None = unweighted."""
+    w = np.ones(len(y)) if w is None else np.asarray(w, dtype=float)
     flag = p >= t
-    tp = (flag & (y == 1)).sum()
-    fp = (flag & (y == 0)).sum()
-    fn = (~flag & (y == 1)).sum()
-    tn = (~flag & (y == 0)).sum()
+    tp = w[flag & (y == 1)].sum()
+    fp = w[flag & (y == 0)].sum()
+    fn = w[~flag & (y == 1)].sum()
+    tn = w[~flag & (y == 0)].sum()
     precision = tp / (tp + fp) if tp + fp else np.nan
     sensitivity = tp / (tp + fn)
     return {
@@ -119,9 +124,10 @@ def at_threshold(y: np.ndarray, p: np.ndarray, t: float) -> dict:
         "specificity": tn / (tn + fp),
         "precision": precision,
         "f1": 2 * precision * sensitivity / (precision + sensitivity),
-        "referred_pct": flag.mean() * 100,
-        "screen_per_case": flag.sum() / tp if tp else np.nan,
+        "referred_pct": w[flag].sum() / w.sum() * 100,
+        "screen_per_case": w[flag].sum() / tp if tp else np.nan,
     }
+
 
 
 # ---------- cross-validation ----------

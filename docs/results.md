@@ -84,3 +84,42 @@ All results below are from 2017–2020 (development data), unweighted, using rep
 - Logistic regression has the best calibration slope (0.94–0.96). Tree models have slopes above 1 (1.08–1.16): their predicted risks are too close to the average.
 - Tree models have slightly higher PR-AUC (about +0.01), a secondary metric.
 - No sign of important non-linear effects or interactions beyond what logistic regression with splines captures.
+
+## R-004 — Temporal validation on 2021–2023 (primary result)
+- **Date:** 2026-10-25
+- **Notebook:** `notebooks/08_temporal_validation.ipynb`
+- **Pre-specified (D-013):** logistic regression, Model A, fitted on all 2017–2020 data. Thresholds fixed from 2017–2020 out-of-fold predictions (Model A: 0.106; Model B: 0.105; age rule: age ≥43). Run once; nothing was changed after seeing these results.
+- **Data:** development n = 4,597 (13.5% positive); validation n = 3,587 (10.6% positive).
+
+### Unweighted (primary)
+| | ROC-AUC | PR-AUC | Brier | Cal. slope | Obs/Exp | Sensitivity | Specificity | Precision | Referred | Screened per case |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **Model A (final)** | 0.709 | 0.191 | 0.095 | 0.83 | 0.70 | 0.822 | 0.479 | 0.158 | 55.3% | 6.3 |
+| Model B | 0.717 | 0.201 | 0.094 | 0.84 | 0.69 | 0.827 | 0.478 | 0.159 | 55.4% | 6.3 |
+| Age rule (≥43) | 0.700 | – | – | – | – | 0.832 | 0.445 | 0.151 | 58.4% | 6.6 |
+
+Model A, bootstrap 95% intervals (1,000 resamples): ROC-AUC 0.684–0.733; calibration slope 0.71–0.95; observed/expected 0.64–0.76; sensitivity 0.78–0.86; referred 53.7–57.0%.
+
+### Weighted with MEC exam weights (secondary)
+| | ROC-AUC | Cal. slope | Obs/Exp | Sensitivity | Specificity | Referred |
+|---|---|---|---|---|---|---|
+| Model A (final) | 0.730 | 0.89 | 0.68 | 0.779 | 0.577 | 45.4% |
+| Model B | 0.739 | 0.90 | 0.67 | 0.792 | 0.576 | 45.5% |
+| Age rule | 0.716 | – | – | 0.770 | 0.547 | 48.1% |
+
+### Calibration by predicted-risk decile (Model A, unweighted)
+| Decile | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Predicted % | 2.6 | 3.9 | 5.6 | 7.8 | 10.7 | 14.3 | 18.0 | 22.4 | 28.2 | 38.5 |
+| Observed % | 1.1 | 3.1 | 3.9 | 6.4 | 9.7 | 10.6 | 11.4 | 17.3 | 18.1 | 24.5 |
+
+### Findings
+- **Discrimination decreased** from 0.744 (internal CV) to 0.709. Ranking of risk transported moderately.
+- **The model overestimates risk** by about 40% (observed/expected 0.70), most strongly in the highest-risk groups. The calibration slope of 0.83 shows predictions are too extreme.
+- This matches the lower hypertension rate in 2021–2023, especially among older adults (D-010).
+- Because risks are overestimated, the fixed threshold referred more people (55% vs 49% in development) and sensitivity was above target (82%).
+- Model A still adds little over the age rule (+0.009 ROC-AUC). Model B again adds little over Model A (+0.008).
+
+### Implications
+- Even within the same country and survey, after about three years, the model needed recalibration. A model developed in NHANES cannot be assumed valid in another population, such as Yemen, without local validation and updating.
+- Relative risk ranking is more transportable than absolute risk.

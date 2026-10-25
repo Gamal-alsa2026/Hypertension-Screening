@@ -123,3 +123,30 @@ Model A, bootstrap 95% intervals (1,000 resamples): ROC-AUC 0.684–0.733; calib
 ### Implications
 - Even within the same country and survey, after about three years, the model needed recalibration. A model developed in NHANES cannot be assumed valid in another population, such as Yemen, without local validation and updating.
 - Relative risk ranking is more transportable than absolute risk.
+
+## R-005 — Post-hoc recalibration on 2021–2023
+- **Date:** 2026-10-25
+- **Notebook:** `notebooks/09_recalibration.ipynb`
+- **Status:** Post-hoc analysis, done after seeing R-004. It does not replace the primary result (R-004).
+- **Method:** Model A predictions from R-004 recalibrated on 2021–2023, evaluated with repeated stratified 5-fold CV × 10 **within** 2021–2023, so each recalibration is tested on participants it was not fitted on. Referral threshold kept at the original risk of 10.6%.
+
+| Method | ROC-AUC | Brier | Cal. slope | Obs/Exp | Sensitivity | Specificity | Referred |
+|---|---|---|---|---|---|---|---|
+| Original (no update) | 0.709 | 0.095 | 0.83 | 0.70 | 0.819 | 0.480 | 55.1% |
+| Intercept update | 0.709 | 0.091 | 0.84 | 1.00 | 0.688 | 0.621 | 41.2% |
+| Intercept + slope update | 0.709 | 0.091 | 1.02 | 1.00 | 0.710 | 0.601 | 43.2% |
+
+| Decile of original risk | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Observed % | 1.1 | 3.1 | 3.9 | 6.4 | 9.7 | 10.6 | 11.4 | 17.3 | 18.1 | 24.5 |
+| Original % | 2.6 | 3.9 | 5.6 | 7.8 | 10.7 | 14.3 | 18.0 | 22.4 | 28.2 | 38.5 |
+| Intercept + slope % | 2.4 | 3.4 | 4.6 | 6.1 | 7.9 | 10.2 | 12.4 | 15.1 | 18.7 | 25.4 |
+
+### Findings
+- Updating intercept and slope restores calibration (slope 1.02, observed/expected 1.00); predicted risks closely match observed rates in every decile.
+- Discrimination is unchanged, as expected: recalibration does not change the ranking.
+- With the original risk threshold (10.6%), recalibrated risks are lower, so sensitivity falls to about 71%. To keep 80% sensitivity, the threshold must be re-derived after recalibration, which gives the same referral rate as before (about 55%), because ranking is unchanged.
+
+### Implications
+- Recalibration makes absolute risks trustworthy but does not improve screening efficiency; efficiency depends on discrimination.
+- When the model is moved to a new setting (e.g. Yemen), both recalibration **and** re-selection of the threshold on local data are needed.
